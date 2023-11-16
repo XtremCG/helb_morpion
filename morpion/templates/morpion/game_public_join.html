@@ -1,0 +1,12 @@
+{% extends "morpion/base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Confirmation</h1>
+    <p>Voulez-vous vraiment rejoindre la partie "{{ game.title }}" ?</p>
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" name="join" class="btn btn-primary">Rejoindre</button>
+        <button type="submit" name="cancel" class="btn btn-secondary">Annuler</button>
+    </form>
+</div>
+{% endblock %}
