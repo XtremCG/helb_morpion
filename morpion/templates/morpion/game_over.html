@@ -1,0 +1,11 @@
+{% extends "morpion/base.html" %}
+{% block content %}
+<div class="container">
+    <h1>Fin de la partie</h1>
+    {% if winner %}
+        <p>Le joueur {{ winner }} a gagné !</p>
+    {% else %}
+        <p>La partie s'est terminée par un match nul.</p>
+    {% endif %}
+</div>
+{% endblock %}

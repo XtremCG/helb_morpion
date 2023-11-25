@@ -3,13 +3,11 @@ from .models import Game
 from .forms import JoinPrivateGameForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
-from django.contrib.auth.models import User
 from django.urls import reverse
 from django.contrib import messages
-from django.http import JsonResponse, HttpResponseBadRequest
-from django.forms.models import model_to_dict
+from django.utils import timezone
+from django.http import JsonResponse
 import json
-from django.core import serializers
 from django.views.decorators.csrf import csrf_exempt
 
 def custom_page_not_found_view(request, exception):
@@ -24,18 +22,18 @@ def custom_permission_denied_view(request, exception=None):
 def custom_bad_request_view(request, exception=None):
     return render(request, "errors/400.html", {})
 
-def update_active_player(request, game_id):
-    try:
-        game = Game.objects.get(pk=game_id)
-        if(game.active_player == game.creator):
-            game.active_player = game.player2
-        elif(game.active_player == game.player2):
-            game.active_player = game.creator
-        game.save()
-        return JsonResponse({'message': 'Attribut mis à jour avec succès.'})
-    except Game.DoesNotExist:
-        return JsonResponse({'error': 'Objet non trouvé.'})
+def game_over(request, winner):
+    template_name = "morpion/game_over.html"
+    context = {'winner': winner}
+    return render(request, template_name, context)
 
+def get_data(request, game_id):
+    game = get_object_or_404(Game, id=game_id)
+    game_grid = game.get_grid() 
+    active_player = game.active_player
+    grid_size = game.grid_size
+    alignment = game.alignment
+    return JsonResponse({'gameGrid': game_grid, 'gameID': game_id, 'activePlayer': active_player, 'gridSize': grid_size, 'activePlayer': active_player, 'alignment': alignment})
 
 @csrf_exempt
 def update_grid(request, game_id):
@@ -45,12 +43,19 @@ def update_grid(request, game_id):
         col = data.get('col')
         value = data.get('value')
         new_active_player = data.get('newActivePlayer')
+        
         try:
             game = Game.objects.get(id=game_id)
+            if str(request.user.get_username()) != game.active_player:
+                return JsonResponse({'error': 'Vous n\'êtes pas le joueur actif.'})
+
             game.active_player = str(new_active_player)
-            game.update_grid_value(row, col, value)
             game.save()
-            return JsonResponse({'success': True})
+            print(game.grid)
+            game.update_grid(row, col, value) 
+            print(game.grid)
+
+            return JsonResponse({'success': True, 'grid': game.grid})
         except Exception as e:
             return JsonResponse({'error': str(e)})
 
@@ -63,7 +68,6 @@ def get_attributes(request, game_id):
     if game.player2 is not None:
         player2_symbol = game.player2.profile.game_symbol.url
     player1_symbol = game.creator.profile.game_symbol.url
-    print(player1_symbol)
     grid = game.get_grid()
 
     response_data = {
@@ -141,7 +145,8 @@ class GameGridView(View, LoginRequiredMixin):
     def get(self, request, game_id):
         game = Game.objects.get(pk=game_id)
         player1_image_url = game.creator.profile.game_symbol.url
-        game.active_player = game.creator
+        game.active_player = game.creator.username
+        game.save()
         if game.player2 is not None:
             player2_image_url = game.player2.profile.game_symbol.url
         else:
@@ -163,10 +168,10 @@ class GameListView(ListView):
     model = Game
     template_name = 'morpion/home.html'
     context_object_name = 'games'
-    ordering = ['-created_at']
 
     def get_queryset(self):
-        return Game.objects.filter(is_private=False)
+        return Game.objects.filter(is_private=False).order_by('-updated_at')
+
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -199,6 +204,7 @@ class GameUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def form_valid(self, form):
         form.instance.creator = self.request.user
+        form.instance.updated_at = timezone.now() 
         instance = form.save(commit=False)
 
         if instance.is_private and not instance.access_code:
