@@ -163,6 +163,7 @@ function gameManagement(element, id) {
                       url: "/game/over/" + winner + "/", 
                       success: function (data) {
                           console.log("La partie est terminée.");
+                          window.location.href = "/game/over/" + winner + "/";
                       },
                       error: function (error) {
                           console.error("Erreur lors de la requête AJAX :", error);
