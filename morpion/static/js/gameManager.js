@@ -46,7 +46,7 @@ function gameManagement(element, id) {
                       );
                       if (winner !== null) {
                         console.log("Le joueur " + winner + " a gagné !");
-                        gameIsOver(winner)
+                        gameIsOver(winner);
                       }
                     },
                     error: function (error) {
@@ -78,7 +78,6 @@ function gameManagement(element, id) {
                   $("#active-player").text("Au tour de " + activePlayer);
                 }
                 function checkWinner(grid, gridSize, alignment) {
-                  // Vérification des row
                   for (let i = 0; i < gridSize; i++) {
                     let row = grid[i][0];
                     let count = 1;
@@ -86,7 +85,7 @@ function gameManagement(element, id) {
                       if (grid[i][j] !== null && grid[i][j] === row) {
                         count++;
                         if (count === alignment) {
-                          return row;
+                          return row; // Victoire
                         }
                       } else {
                         row = grid[i][j];
@@ -94,8 +93,7 @@ function gameManagement(element, id) {
                       }
                     }
                   }
-
-                  // Vérification des colonnes
+                
                   for (let i = 0; i < gridSize; i++) {
                     let col = grid[0][i];
                     let count = 1;
@@ -103,7 +101,7 @@ function gameManagement(element, id) {
                       if (grid[j][i] !== null && grid[j][i] === col) {
                         count++;
                         if (count === alignment) {
-                          return col;
+                          return col; // Victoire
                         }
                       } else {
                         col = grid[j][i];
@@ -111,8 +109,7 @@ function gameManagement(element, id) {
                       }
                     }
                   }
-
-                  // Vérification des diagonales
+                
                   for (let i = 0; i <= gridSize - alignment; i++) {
                     for (let j = 0; j <= gridSize - alignment; j++) {
                       let diagonal = grid[i][j];
@@ -124,7 +121,7 @@ function gameManagement(element, id) {
                         ) {
                           count++;
                           if (count === alignment) {
-                            return diagonal;
+                            return diagonal; // Victoire
                           }
                         } else {
                           break;
@@ -132,7 +129,7 @@ function gameManagement(element, id) {
                       }
                     }
                   }
-
+                
                   for (let i = 0; i <= gridSize - alignment; i++) {
                     for (let j = gridSize - 1; j >= alignment - 1; j--) {
                       let diagonal = grid[i][j];
@@ -144,7 +141,7 @@ function gameManagement(element, id) {
                         ) {
                           count++;
                           if (count === alignment) {
-                            return diagonal;
+                            return diagonal; // Victoire
                           }
                         } else {
                           break;
@@ -152,30 +149,37 @@ function gameManagement(element, id) {
                       }
                     }
                   }
-
-                  // Aucun gagnant trouvé
-                  return null;
+                
+                  // Vérifier s'il y a des cases vides
+                  for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                      if (grid[i][j] === null) {
+                        return null;
+                      }
+                    }
+                  }
+                
+                  return "Match nul"; // Aucune case vide, match nul
                 }
+                
 
                 function gameIsOver(winner) {
                   $.ajax({
-                      type: "GET",
-                      url: "/game/over/" + winner + "/", 
-                      success: function (data) {
-                          console.log("La partie est terminée.");
-                          window.location.href = "/game/over/" + winner + "/";
-                      },
-                      error: function (error) {
-                          console.error("Erreur lors de la requête AJAX :", error);
-                          // Gérer les erreurs si nécessaire
-                      }
+                    type: "GET",
+                    url: "/game/over/" + winner + "/",
+                    success: function (data) {
+                      window.location.href = "/game/over/" + winner + "/";
+                    },
+                    error: function (error) {
+                      console.error("Erreur lors de la requête AJAX :", error);
+                    },
                   });
-              }
+                }
 
                 setInterval(updateTable, 1000);
               });
             } else {
-              alert("Error updating grid value:", response.error);
+              alert("Ce n'est pas à ton tour !");
             }
           },
           error: function (xhr, status, error) {
@@ -186,7 +190,7 @@ function gameManagement(element, id) {
     },
     error: function (error) {
       console.log(
-        "Erreur lors de la récupération de la valeur de mon_attribut:",
+        "Erreur lors de la récupération de la valeur de mon attribut : ",
         error
       );
     },

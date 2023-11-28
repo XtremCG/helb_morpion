@@ -33,7 +33,7 @@ def get_data(request, game_id):
     active_player = game.active_player
     grid_size = game.grid_size
     alignment = game.alignment
-    return JsonResponse({'gameGrid': game_grid, 'gameID': game_id, 'activePlayer': active_player, 'gridSize': grid_size, 'activePlayer': active_player, 'alignment': alignment})
+    return JsonResponse({'gameGrid': game_grid, 'gameID': game_id, 'gridSize': grid_size, 'activePlayer': active_player, 'alignment': alignment})
 
 @csrf_exempt
 def update_grid(request, game_id):
