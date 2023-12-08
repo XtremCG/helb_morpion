@@ -26,9 +26,8 @@
                 <div class="navbar-nav">
                     {% if user.is_authenticated %}
                     <a class="nav-item nav-link" href="{% url 'game-create' %}">Créer une partie</a>
-                    <a class="nav-item nav-link" href="{% url 'game-private-join' %}">Partie privée</a>
                     <a class="nav-item nav-link" href="{% url 'profile' %}">Profil</a>
-                    <a class="nav-item nav-link" href="#">Stats</a>
+                    <a class="nav-item nav-link" href="{% url 'stats' %}">Stats</a>
                     {% if user.is_superuser %}
                     <a class="nav-item nav-link" href="/admin">Admin</a>
                     {% endif %}

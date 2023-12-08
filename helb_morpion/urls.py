@@ -29,10 +29,6 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(template_name='users/logout.html'), name='logout'),
     path('', include('morpion.urls'))
 ]
-handler404 = 'morpion.views.custom_page_not_found_view'
-handler500 = 'morpion.views.custom_error_view'
-handler403 = 'morpion.views.custom_permission_denied_view'
-handler400 = 'morpion.views.custom_bad_request_view'
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

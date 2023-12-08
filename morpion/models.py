@@ -8,7 +8,6 @@ class Game(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE)
     player2 = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='joined_games')
     active_player = models.CharField(max_length=20, default='')
-
     title = models.CharField(max_length=200)
     grid_size = models.PositiveIntegerField()
     alignment = models.PositiveIntegerField()
@@ -16,6 +15,7 @@ class Game(models.Model):
         ('waiting', 'Waiting'),
         ('started', 'Started'),
         ('completed', 'Completed'),
+        ('abandoned', 'Abandoned')
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
     created_at = models.DateTimeField(auto_now_add=True)
@@ -29,7 +29,7 @@ class Game(models.Model):
         return self.grid_data
 
     def __str__(self):
-        return f"{self.title} ({self.status}) by {self.creator}"
+        return f"{self.title} ({self.status}) par {self.creator}"
 
     def get_absolute_url(self):
         return reverse('game-detail', args=[str(self.id)])
@@ -40,13 +40,14 @@ class Game(models.Model):
 
     def get_all_attributes(self):
         attributes = {
-            'id': str(self.id),
+            'id': self.id,
             'creator': str(self.creator),
             'player2': str(self.player2),
             'active_player': str(self.active_player),
             'title': self.title,
-            'grid_size': str(self.grid_size),
-            'alignment': str(self.alignment)
+            'grid_size': self.grid_size,
+            'alignment': self.alignment,
+            'grid': self.grid
         }
         return attributes
 

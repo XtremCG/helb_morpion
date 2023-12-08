@@ -4,8 +4,8 @@
     <img class="rounded-circle article-img" src="{{ object.creator.profile.image.url }}">
     <div class="media-body">
         <div class="article-metadata">
-            <a class="mr-2" href="#">{{ object.creator }}</a>
-            <small class="text-muted">{{ object.created_at|date:"F d, Y" }}</small>
+            <a class="mr-2" href="{% url 'user-games' game.creator.username %}">{{ game.creator }}</a>
+            <small class="text-muted">Dernière modification : {{ game.updated_at|date:"F d, Y" }}</small>
             {% if object.creator == user %}
                 <div>
                     <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'game-update' game.id %}">Modifier</a>

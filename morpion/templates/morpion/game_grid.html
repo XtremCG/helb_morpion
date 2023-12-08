@@ -1,21 +1,21 @@
 {% extends "morpion/base.html" %}
 {% block content %}
-<div class="container">
+<div class="container" id="game-board">
     <h1>Partie en cours - {{ game.title }}</h1>
     <h2>Joueurs :</h2>
-    <p class="player-name lead">{{ game.creator.username }} (Créateur)</p>
-    <p class="player-name lead">{{ game.player2.username }}</p>
+    <p class="player-name lead" id="player1">Joueur 1 : {{ game.creator.username }} (Créateur)</p>
+    <p class="player-name lead" id="player2">Joueur 2 : {{ game.player2.username }}</p>
     <p class="player-name lead" id="active-player">Au tour de : {{ game.active_player }}</p>
     {% if game.access_code is not None %}
     <p class="player-name">Code d'accès : {{ game.access_code }}</p>
     {% endif %}
-    <button class="btn btn-outline-danger" type="submit">Abandonner</button>
+    <button class="btn btn-outline-danger mb-4">Abandonner</button>
     <table id="game-grid">
         {% for row in game.grid %}
         <tr>
             {% for cell in row %}
-            <td class="cell" id="{{ forloop.parentloop.counter}}-{{ forloop.counter}}" data-game-id="{{ game.id }}"
-                onclick="gameManagement(this, id)">{% if cell is not None %} {{ cell }} {% endif %}</td>
+            <td class="cell" id="{{ forloop.parentloop.counter}}-{{ forloop.counter}}" data-game-attributes="{{ game_attributes }}" data-symbol-player2="{{ player2_image_url }}" data-symbol-player1="{{ player1_image_url }}"
+                onclick="gameManagement(this)"></td>
             {% endfor %}
         </tr>
         {% endfor %}

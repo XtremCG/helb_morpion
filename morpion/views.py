@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
-from .forms import JoinPrivateGameForm
+from stats.models import StatsMorpion, StatsWin
+from .forms import JoinGameForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
@@ -9,31 +10,52 @@ from django.utils import timezone
 from django.http import JsonResponse
 import json
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
 
-def custom_page_not_found_view(request, exception):
-    return render(request, "errors/404.html", {})
+def stats_view(request):
+    template_name = "morpion/stats.html"
+    all_stats = StatsMorpion.objects.all()
 
-def custom_error_view(request, exception=None):
-    return render(request, "errors/500.html", {})
+    # Créez une liste pour stocker les statistiques formatées
+    formatted_stats = []
 
-def custom_permission_denied_view(request, exception=None):
-    return render(request, "errors/403.html", {})
+    # Parcourez chaque statistique et récupérez les informations nécessaires
+    for stats in all_stats:
+        stats_info = {
+            'grid_size': stats.grid_size,
+            'alignment': stats.alignment,
+            'game_played': stats.game_played,
+            'games_won': stats.games_won,
+            'winners': StatsWin.objects.filter(stat_morpion=stats).order_by('-wins')[:5],
+        }
+        formatted_stats.append(stats_info)
 
-def custom_bad_request_view(request, exception=None):
-    return render(request, "errors/400.html", {})
+    context = {'formatted_stats': formatted_stats}
+    return render(request, template_name, context)
 
-def game_over(request, winner):
+
+
+def game_over(request, game_id, winner):
     template_name = "morpion/game_over.html"
-    context = {'winner': winner}
+    game = Game.objects.get(id=game_id)
+    game.status = "completed"
+    game.save()
+
+    context = {'winner': winner, 'game': game}
     return render(request, template_name, context)
 
 def get_data(request, game_id):
     game = get_object_or_404(Game, id=game_id)
     game_grid = game.get_grid() 
-    active_player = game.active_player
-    grid_size = game.grid_size
-    alignment = game.alignment
-    return JsonResponse({'gameGrid': game_grid, 'gameID': game_id, 'gridSize': grid_size, 'activePlayer': active_player, 'alignment': alignment})
+
+    data = {
+        'gameGrid': game_grid, 'gameID': game_id, 'gridSize': game.grid_size, 'activePlayer': game.active_player, 'alignment': game.alignment, 'player2': game.creator.username, 'player2Symbol': game.creator.profile.game_symbol.url
+    }
+    if(game.player2 != None):
+        data['player2'] = game.player2.username
+        data['player2Symbol'] = game.player2.profile.game_symbol.url
+    return JsonResponse({'data': data})
 
 @csrf_exempt
 def update_grid(request, game_id):
@@ -51,9 +73,7 @@ def update_grid(request, game_id):
 
             game.active_player = str(new_active_player)
             game.save()
-            print(game.grid)
             game.update_grid(row, col, value) 
-            print(game.grid)
 
             return JsonResponse({'success': True, 'grid': game.grid})
         except Exception as e:
@@ -61,83 +81,42 @@ def update_grid(request, game_id):
 
     return JsonResponse({'error': 'Invalid request method'})
 
-def get_attributes(request, game_id):
-    game = get_object_or_404(Game, id=game_id)
-
-    game_attributes = json.dumps(game.get_all_attributes())
-    if game.player2 is not None:
-        player2_symbol = game.player2.profile.game_symbol.url
-    player1_symbol = game.creator.profile.game_symbol.url
-    grid = game.get_grid()
-
-    response_data = {
-        'game_attributes': game_attributes,
-        'grid': grid,
-        'player1_symbol': player1_symbol,
-    }
-
-    if game.player2 is not None:
-        response_data['player2_symbol'] = player2_symbol
-    else :
-        response_data['player2_symbol'] = "media/default_symbol.png"
-
-    return JsonResponse(response_data)
-
+@login_required(login_url='login')
 def confirm_join_game(request, game_id):
-    game = Game.objects.get(pk=game_id)
+    template_name ='morpion/game_confirm_join.html'
+    game = get_object_or_404(Game, pk=game_id)
+    form = JoinGameForm(request.POST or None)
 
     if request.method == 'POST':
         if 'join' in request.POST:
             if game.status == "waiting":
                 if game.player2 is None:
-                    if game.creator == request.user:
-                        messages.warning(request, f'Le créateur ne peut pas rejoindre sa propre partie')
-                    else:
-                        game.player2 = request.user 
-                        game.status = "started"
-                        game.save()
-                        return redirect('game-grid', game.id)
-                else:
-                    messages.warning(request, f'La partie est déjà pleine')
-            else:
-                messages.warning(request, f'La partie a déjà commencé')
-        elif 'cancel' in request.POST:
-            return redirect('/')  
-
-    return render(request, 'morpion/game_public_join.html', {'game': game})
-
-class JoinPrivateGameView(View, LoginRequiredMixin):
-    template_name = 'morpion/game_private_join.html'
-
-    def get(self, request):
-        form = JoinPrivateGameForm()
-        return render(request, self.template_name, {'form': form})
-
-    def post(self, request):
-        form = JoinPrivateGameForm(request.POST)
-        if form.is_valid():
-            game = form.cleaned_data["game"]
-            access_code = form.cleaned_data["access_code"]
-
-            if game.status == "waiting":
-                if game.access_code == access_code:
-                    if game.player2 is None:
+                    if not game.is_private or request.user == game.creator:
                         if game.creator == request.user:
-                            messages.warning(request, f'Le créateur ne peut pas rejoindre sa propre partie')
-
+                            return redirect('game-grid', game.id)
                         else:
                             game.player2 = request.user
                             game.status = "started"
                             game.save()
                             return redirect('game-grid', game.id)
                     else:
-                        messages.warning(request, f'La partie est déjà pleine')
+                        if form.is_valid():
+                            access_code = form.cleaned_data['access_code']
+                            if access_code == game.access_code:
+                                game.player2 = request.user
+                                game.status = "started"
+                                game.save()
+                                return redirect('game-grid', game.id)
+                            else:
+                                messages.warning(request, 'Code d\'accès incorrect pour la partie privée')
                 else:
-                    messages.warning(request, f'Code d\'accès incorrect')
+                    messages.warning(request, 'La partie est déjà pleine')
             else:
-                messages.warning(request, f'La partie a déjà commencée')
-        return render(request, self.template_name, {'form': form})
+                messages.warning(request, 'La partie a déjà commencé ou est terminée')
+        elif 'cancel' in request.POST:
+            return redirect('/')
 
+    return render(request, template_name, {'game': game, 'form': form})
 
 class GameGridView(View, LoginRequiredMixin):
     template_name = 'morpion/game_grid.html'
@@ -153,31 +132,37 @@ class GameGridView(View, LoginRequiredMixin):
             player2_image_url = game.creator.profile.game_symbol.url
 
         game_attributes = json.dumps(game.get_all_attributes())
-        game_grid = json.dumps(game.get_grid())
         context = {
             'game': game,
             'player1_image_url': player1_image_url,
             'player2_image_url': player2_image_url,
             'game_attributes': game_attributes,
-            'game_grid': game_grid,
         }
         return render(request, self.template_name, context)
 
+class UserGameListView(ListView):
+    model = Game
+    template_name = 'morpion/user_games.html'
+    context_object_name = 'games'
+    paginate_by = 3
+
+    def get_queryset(self):
+        user = get_object_or_404(User, username=self.kwargs.get('username'))
+        return Game.objects.filter(creator=user).filter(status="waiting").order_by('-updated_at')
 
 class GameListView(ListView):
     model = Game
     template_name = 'morpion/home.html'
     context_object_name = 'games'
+    paginate_by = 3
 
     def get_queryset(self):
-        return Game.objects.filter(is_private=False).order_by('-updated_at')
-
+        return Game.objects.filter(status="waiting").order_by('-updated_at')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['title'] = 'Liste des parties publiques'
         return context
-
 
 class GameCreateView(LoginRequiredMixin, CreateView):
     model = Game
@@ -185,9 +170,13 @@ class GameCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creator = self.request.user
-        if form.instance.is_private:
-            form.instance.access_code = Game.generate_access_code(form.instance)
-        return super().form_valid(form)
+        if form.instance.alignment <= form.instance.grid_size:
+            if form.instance.is_private:
+                form.instance.access_code = Game.generate_access_code(form.instance)                 
+            return super().form_valid(form)
+        else:
+            messages.warning(self.request, 'La taille de la grille doit être plus grande ou égale à l\'alignement !')
+            return self.form_invalid(form)
     
     def get_success_url(self):
         return reverse('game-grid', args=[self.object.id])
