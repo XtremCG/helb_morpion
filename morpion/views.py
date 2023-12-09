@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
-from stats.models import StatsMorpion, StatsWin
+from stats.models import Stats
 from .forms import JoinGameForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -13,33 +13,36 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 
-def stats_view(request):
+def view_stats(request):
     template_name = "morpion/stats.html"
-    all_stats = StatsMorpion.objects.all()
+    stats= Stats.objects.select_related('game').values(
+        'game__alignment',
+        'game__grid_size',
+        'game__created_at',
+        'game__winner__username'
+    )
 
-    # Créez une liste pour stocker les statistiques formatées
-    formatted_stats = []
-
-    # Parcourez chaque statistique et récupérez les informations nécessaires
-    for stats in all_stats:
-        stats_info = {
-            'grid_size': stats.grid_size,
-            'alignment': stats.alignment,
-            'game_played': stats.game_played,
-            'games_won': stats.games_won,
-            'winners': StatsWin.objects.filter(stat_morpion=stats).order_by('-wins')[:5],
-        }
-        formatted_stats.append(stats_info)
-
-    context = {'formatted_stats': formatted_stats}
+    # Passez la liste des éléments Stats à la template
+    context = {'stats': stats}    
     return render(request, template_name, context)
 
+@csrf_exempt
+def set_stats(request, game_id):
+    if request.method == 'POST':
+        game = Game.objects.get(pk=game_id)
+
+        stats, created = Stats.objects.get_or_create(game=game)
+
+        return JsonResponse({'success': True})
+    else:
+        return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
 
 
 def game_over(request, game_id, winner):
     template_name = "morpion/game_over.html"
     game = Game.objects.get(id=game_id)
     game.status = "completed"
+    game.winner = User.objects.get(username=winner)
     game.save()
 
     context = {'winner': winner, 'game': game}

@@ -1,6 +1,6 @@
 {% extends "morpion/base.html" %}
 {% block content %}
-<div class="container mt-5">
+<div class="container mt-5" id="game-over-page" data-game-id="{{ game.id }}">
     <div class="text-center border p-4">
         <h1 class="display-4 mb-4">Fin de la partie : {{ game.title }}</h1>
         <h2 class="text-muted font-weight-normal mb-4">Créée par {{ game.creator }}</h2>

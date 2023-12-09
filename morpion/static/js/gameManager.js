@@ -1,4 +1,4 @@
-var grid, activePlayer, player1, player2, winner, gameID, row, col, abandon, user;
+var grid, activePlayer, player1, player2, winner, gameID, row, col;
 if ($("#game-board").length) {
   var gameAttributes = $("td").attr("data-game-attributes");
   var gameAttributesObject = JSON.parse(gameAttributes);
@@ -9,7 +9,6 @@ if ($("#game-board").length) {
   gameID = gameAttributesObject.id;
   player1 = gameAttributesObject.creator;
   player2 = gameAttributesObject.player2;
-  abandon = false
 
   $(document).ready(function () {
     setInterval(function () {
@@ -18,11 +17,32 @@ if ($("#game-board").length) {
   });
 }
 
+if ($("#game-over-page").length) {
+  $(document).ready(function() {
+    var gameID = $("#game-over-page").data("game-id");
+    console.log(gameID)
+    $.ajax({
+      type: 'POST',
+      url: '/set-stats/' + gameID + '/',
+      success: function(response) {
+          if (response.success) {
+              console.log('Statistiques enregistrées avec succès.');
+          } else {
+              console.error('Erreur lors de l\'enregistrement des statistiques.');
+          }
+      },
+      error: function(error) {
+          console.error('Erreur lors de la requête AJAX.', error);
+      }
+  });
+});
+}
+
 function gameManagement(element) {
   row = parseInt(element.id[0]) - 1;
   col = parseInt(element.id[2]) - 1;
   if (player2 == player1) {
-    alert("Veuillez attendre que le deuxième joueur rejoigne la partie !")
+    alert("Veuillez attendre que le deuxième joueur rejoigne la partie !");
   } else {
     updateGrid();
   }
@@ -74,25 +94,6 @@ function updateTable() {
       console.error("Error:", error);
     },
   });
-}
-
-function switchAbandon(user) {
-  abandon = true
-}
-
-function gameAbandon() {
-  if(abandon == true) {
-    $.ajax({
-      type: "GET",
-      url: "/game/" + gameID + "/abandon/" + user + "/",
-      success: function (data) {
-        window.location.href = "/game/" + gameID + "/abandon/" + user + "/";
-      },
-      error: function (error) {
-        console.error("Erreur lors de la requête AJAX :", error);
-      },
-    });
-  }
 }
 
 function gameOver() {

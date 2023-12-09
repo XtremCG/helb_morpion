@@ -1,7 +1,4 @@
 from django.contrib import admin
-from .models import StatsMorpion, StatsWin
+from .models import Stats
 
-admin.site.register(StatsMorpion)
-admin.site.register(StatsWin)
-
-
+admin.site.register(Stats)

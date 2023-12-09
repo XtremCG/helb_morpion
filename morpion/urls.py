@@ -12,6 +12,7 @@ urlpatterns = [
     path('update-grid/<int:game_id>/', views.update_grid, name='update-grid'),
     path('game/<int:game_id>/grid/get-data/', views.get_data, name='get-data'),
     path('game/<int:game_id>/over/<str:winner>/', views.game_over, name='game_over'),
-    path('stats', views.stats_view, name='stats'),
     path('games/user/<str:username>', UserGameListView.as_view(), name='user-games'),
+    path('set-stats/<int:game_id>/', views.set_stats, name='set-stats'),
+    path('stats/', views.view_stats, name='display-stats'),
 ]
