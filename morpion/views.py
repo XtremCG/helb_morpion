@@ -12,19 +12,36 @@ import json
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
+from datetime import datetime, timedelta
+from django.db.models import Q
 
-def view_stats(request):
-    template_name = "morpion/stats.html"
-    stats= Stats.objects.select_related('game').values(
-        'game__alignment',
-        'game__grid_size',
-        'game__created_at',
-        'game__winner__username'
-    )
 
-    # Passez la liste des éléments Stats à la template
-    context = {'stats': stats}    
-    return render(request, template_name, context)
+@login_required
+def view_stats_activity(request):
+    user = request.user
+    current_date = datetime.now()
+
+    # Get current month and year
+    month = current_date.month
+    year = current_date.year
+    first_day = datetime(year, month, 1)
+    last_day = datetime(year, month, 31)
+
+    daily_counter = {}
+
+    for i in range((last_day - first_day).days + 1):
+        current_date = first_day + timedelta(days=i)
+        games = Game.objects.filter(
+            Q(created_at=current_date, creator=user) | Q(created_at=current_date, player2=user)
+        )
+        daily_counter[current_date.day] = games.count()
+    
+    context = {
+        'x_values': json.dumps(list(daily_counter.keys())),
+        'y_values': json.dumps(list(daily_counter.values())),
+        'all_zero': all(value == 0 for value in daily_counter.values())
+    }
+    return render(request, 'morpion/stats.html', context)
 
 @csrf_exempt
 def set_stats(request, game_id):
@@ -41,6 +58,7 @@ def set_stats(request, game_id):
 def game_over(request, game_id, winner):
     template_name = "morpion/game_over.html"
     game = Game.objects.get(id=game_id)
+    print(game.created_at)
     game.status = "completed"
     game.winner = User.objects.get(username=winner)
     game.save()

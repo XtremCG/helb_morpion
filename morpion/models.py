@@ -19,12 +19,11 @@ class Game(models.Model):
         ('abandoned', 'Abandoned')
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_private = models.BooleanField(default=False)
     access_code = models.CharField(max_length=6, blank=True, null=True)
     grid_data = models.JSONField(default=dict)
-
     @property
     def grid(self):
         return self.grid_data

@@ -1,39 +1,11 @@
 {% extends "morpion/base.html" %}
 {% block content %}
-<div class="container mt-5">
-    <h1 class="mb-4">Details des stats</h1>
 
-    {% if stats %}
-      <div class="table-responsive">
-        <table class="table table-bordered table-striped">
-          <thead class="thead-dark">
-            <tr>
-              <th>Alignement</th>
-              <th>Taille de la grille</th>
-              <th>Date de création</th>
-              <th>Gagnant</th>
-            </tr>
-          </thead>
-          <tbody>
-            {% for stats in stats %}
-              <tr>
-                <td>{{ stats.game__alignment }}</td>
-                <td>{{ stats.game__grid_size }}</td>
-                <td>{{ stats.game__created_at }}</td>
-                <td>
-                  {% if stats.game__winner__username %}
-                    {{ stats.game__winner__username }}
-                  {% else %}
-                    No Winner
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-    {% else %}
-      <p>No stats available.</p>
-    {% endif %}
-  </div>
+{% if all_zero %}
+<p>Vous n'avez joué aucune partie ce mois-ci</p>
+{% else %}
+<canvas id="myChart" style="width:100%;max-width:800px"></canvas>
+<div id="compteur-par-jour-x" data-values="{{ x_values }}"></div>
+<div id="compteur-par-jour-y" data-values="{{ y_values }}"></div>
+{% endif %}
 {% endblock %}
