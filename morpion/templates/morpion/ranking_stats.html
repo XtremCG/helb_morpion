@@ -1,0 +1,61 @@
+{% extends "morpion/base.html" %}
+{% block content %}
+<div class="container mt-5">
+
+    <form method="post" action="{% url 'ranking-stats' %}" class="mb-4">
+        {% csrf_token %}
+        <div class="row">
+            <div class="col-md-4">
+                <div class="form-group text-center">
+                    <label for="{{ form.grid_size.id_for_label }}">Taille de la grille:</label>
+                    {{ form.grid_size }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group text-center">
+                    <label for="{{ form.alignment.id_for_label }}">Alignement:</label>
+                    {{ form.alignment }}
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group text-center">
+                    <button type="submit" class="btn btn-primary btn-block btn-custom">Filter</button>
+                </div>
+            </div>
+        </div>
+    </form>
+    <h1 class="mb-4 text-center">Top {{ displayed_users }} pour la configuration G{{ grid_size }}A{{ alignment }}</h1>
+    {% if final_ranking %}
+
+    <table class="table table-bordered text-center">
+        <thead class="thead-dark">
+            <tr>
+                <th style="width: 20px;">Classement</th>
+                <th>Joueur</th>
+                <th>Victoire(s)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for user, wins in final_ranking.items %}
+            <tr {% if user.username == request.user.username %} class="table-info" {% endif %}>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ user.username }}</td>
+                    <td>{{ wins }}</td>
+                </tr>
+            {% endfor %}
+
+            {% if user_position > displayed_users %}
+                <tr class="table-info">
+                    <td>{{ user_position }}</td>
+                    <td>{{ request.user.username }}</td>
+                    <td>{{ user_wins }}</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    {% else %}
+    <p>Il n'y a aucun classement pour cette configuration</p>
+    {% endif %}
+</div>
+{% endblock %}

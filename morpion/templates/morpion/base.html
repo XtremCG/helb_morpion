@@ -33,7 +33,7 @@
                         </a>
                         <div class="dropdown-menu" aria-labelledby="navbarDropdown">
                             <a class="dropdown-item" href="{% url 'activity-stats' %}">Activité</a>
-                            <a class="dropdown-item" href="#">Classement</a>
+                            <a class="dropdown-item" href="{% url 'ranking-stats' %}">Classement</a>
                         </div>
                     </div>
                     {% if user.is_superuser %}

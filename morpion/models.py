@@ -24,6 +24,7 @@ class Game(models.Model):
     is_private = models.BooleanField(default=False)
     access_code = models.CharField(max_length=6, blank=True, null=True)
     grid_data = models.JSONField(default=dict)
+    
     @property
     def grid(self):
         return self.grid_data

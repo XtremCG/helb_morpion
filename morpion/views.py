@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
 from stats.models import Stats
-from .forms import JoinGameForm
+from .forms import JoinGameForm, StatsForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
@@ -15,6 +15,55 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.db.models import Q
 
+@login_required
+def view_stats_ranking(request):
+    my_hashmap = {}
+    user = request.user
+    displayed_users = 3
+    alignment = 3
+    grid_size = 3
+    if request.method == 'POST':
+        form = StatsForm(request.POST)
+        if form.is_valid():
+            alignment = form.cleaned_data['alignment']
+            grid_size = form.cleaned_data['grid_size']
+            games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
+        else:
+            games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
+    else:
+        form = StatsForm()
+        games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
+
+    for game in games:
+        if game.winner in my_hashmap:
+            my_hashmap[game.winner] += 1
+        else:
+            my_hashmap[game.winner] = 1
+
+    users_ranking = dict(sorted(my_hashmap.items(), key=lambda x: x[1], reverse=True))
+
+    top_ranking = dict(list(users_ranking.items())[:displayed_users])
+
+    final_ranking = dict(sorted(top_ranking.items(), key=lambda x: x[1], reverse=True))
+
+    user_position = None
+    for position, (username, wins) in enumerate(users_ranking.items(), start=1):
+        if username == user:
+            user_position = position
+            break
+        
+    user_wins = users_ranking.get(user, 0)
+
+    context = {
+        "form": form,
+        "final_ranking": final_ranking,
+        "user_position": user_position,
+        "user_wins": user_wins,
+        "displayed_users": displayed_users,
+        "alignment": alignment,
+        "grid_size": grid_size,
+    }
+    return render(request, 'morpion/ranking_stats.html', context)
 
 @login_required
 def view_stats_activity(request):
@@ -33,7 +82,7 @@ def view_stats_activity(request):
         current_date = first_day + timedelta(days=i)
         games = Game.objects.filter(
             Q(created_at=current_date, creator=user) | Q(created_at=current_date, player2=user)
-        )
+        ).filter(status="completed")
         daily_counter[current_date.day] = games.count()
     
     context = {
@@ -41,7 +90,7 @@ def view_stats_activity(request):
         'y_values': json.dumps(list(daily_counter.values())),
         'all_zero': all(value == 0 for value in daily_counter.values())
     }
-    return render(request, 'morpion/stats.html', context)
+    return render(request, 'morpion/activity_stats.html', context)
 
 @csrf_exempt
 def set_stats(request, game_id):
