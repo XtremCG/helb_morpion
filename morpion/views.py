@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
-from stats.models import Stats
 from .forms import JoinGameForm, StatsForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
@@ -15,8 +14,8 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.db.models import Q
 
-@login_required
 def view_stats_ranking(request):
+    
     my_hashmap = {}
     user = request.user
     displayed_users = 3
@@ -35,24 +34,25 @@ def view_stats_ranking(request):
         games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
 
     for game in games:
-        if game.winner in my_hashmap:
-            my_hashmap[game.winner] += 1
-        else:
-            my_hashmap[game.winner] = 1
+        if game.winner :
+            if game.winner in my_hashmap:
+                my_hashmap[game.winner] += 1
+            else:
+                my_hashmap[game.winner] = 1
 
     users_ranking = dict(sorted(my_hashmap.items(), key=lambda x: x[1], reverse=True))
 
     top_ranking = dict(list(users_ranking.items())[:displayed_users])
 
     final_ranking = dict(sorted(top_ranking.items(), key=lambda x: x[1], reverse=True))
-
-    user_position = None
-    for position, (username, wins) in enumerate(users_ranking.items(), start=1):
-        if username == user:
-            user_position = position
-            break
-        
-    user_wins = users_ranking.get(user, 0)
+    if user:
+        user_position = None
+        for position, (username, wins) in enumerate(users_ranking.items(), start=1):
+            if username == user:
+                user_position = position
+                break
+    if user:    
+        user_wins = users_ranking.get(user, 0)
 
     context = {
         "form": form,
@@ -70,7 +70,6 @@ def view_stats_activity(request):
     user = request.user
     current_date = datetime.now()
 
-    # Get current month and year
     month = current_date.month
     year = current_date.year
     first_day = datetime(year, month, 1)
@@ -92,24 +91,15 @@ def view_stats_activity(request):
     }
     return render(request, 'morpion/activity_stats.html', context)
 
-@csrf_exempt
-def set_stats(request, game_id):
-    if request.method == 'POST':
-        game = Game.objects.get(pk=game_id)
-
-        stats, created = Stats.objects.get_or_create(game=game)
-
-        return JsonResponse({'success': True})
-    else:
-        return JsonResponse({'success': False, 'error': 'Méthode non autorisée'})
-
 
 def game_over(request, game_id, winner):
     template_name = "morpion/game_over.html"
     game = Game.objects.get(id=game_id)
-    print(game.created_at)
     game.status = "completed"
-    game.winner = User.objects.get(username=winner)
+    if winner != "Match nul":
+        game.winner = User.objects.get(username=winner)
+    else :
+        game.winner = None
     game.save()
 
     context = {'winner': winner, 'game': game}
@@ -120,12 +110,41 @@ def get_data(request, game_id):
     game_grid = game.get_grid() 
 
     data = {
-        'gameGrid': game_grid, 'gameID': game_id, 'gridSize': game.grid_size, 'activePlayer': game.active_player, 'alignment': game.alignment, 'player2': game.creator.username, 'player2Symbol': game.creator.profile.game_symbol.url
+        'abandon':game.abandon ,'gameGrid': game_grid, 'gameID': game_id, 'gridSize': game.grid_size, 'activePlayer': game.active_player, 'alignment': game.alignment, 'player2': game.creator.username, 'player2Symbol': game.creator.profile.game_symbol.url
     }
     if(game.player2 != None):
         data['player2'] = game.player2.username
         data['player2Symbol'] = game.player2.profile.game_symbol.url
+        
+    if game.abandon is not None:
+        user = User.objects.get(username=game.abandon)
+        if user != request.user:
+            game.winner = request.user
+            game.status = "completed"
+            messages.warning(request, f'Votre adversaire {user.username} a quitté la partie, vous avez donc gagné la partie.')
     return JsonResponse({'data': data})
+
+@csrf_exempt
+def set_abandon(request, game_id):
+    if request.method == 'POST':
+        data = json.loads(request.body.decode('utf-8'))
+        abandon = data.get('abandonPlayer')
+        try:
+            game = Game.objects.get(id=game_id)
+            game.abandon = abandon
+            game.status = "completed"
+            abandonUser = User.objects.get(username=abandon)
+            if abandonUser == game.creator:
+                game.winner = game.player2
+            elif abandonUser == game.player2:
+                game.winner = game.creator
+            game.save()
+            game.save()
+
+            return JsonResponse({'success': True})
+        except Exception as e:
+            return JsonResponse({'error': str(e)})
+    return JsonResponse({'error': 'Invalid request method'})
 
 @csrf_exempt
 def update_grid(request, game_id):
@@ -135,17 +154,15 @@ def update_grid(request, game_id):
         col = data.get('col')
         value = data.get('value')
         new_active_player = data.get('newActivePlayer')
-        
         try:
             game = Game.objects.get(id=game_id)
             if str(request.user.get_username()) != game.active_player:
                 return JsonResponse({'error': 'Vous n\'êtes pas le joueur actif.'})
 
             game.active_player = str(new_active_player)
-            game.save()
             game.update_grid(row, col, value) 
 
-            return JsonResponse({'success': True, 'grid': game.grid})
+            return JsonResponse({'success': True})
         except Exception as e:
             return JsonResponse({'error': str(e)})
 
@@ -240,6 +257,8 @@ class GameCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creator = self.request.user
+        form.instance.winner = None
+        form.instance.abandon = None
         if form.instance.alignment <= form.instance.grid_size:
             if form.instance.is_private:
                 form.instance.access_code = Game.generate_access_code(form.instance)                 

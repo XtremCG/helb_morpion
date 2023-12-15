@@ -9,6 +9,7 @@ class Game(models.Model):
     player2 = models.ForeignKey(User, on_delete=models.SET_NULL, blank=True, null=True, related_name='joined_games')
     active_player = models.CharField(max_length=20, default='')
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='games_won')
+    abandon = models.CharField(max_length=20, default='', null=True, blank=True)
     title = models.CharField(max_length=200)
     grid_size = models.PositiveIntegerField()
     alignment = models.PositiveIntegerField()

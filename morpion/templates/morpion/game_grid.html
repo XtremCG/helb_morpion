@@ -9,13 +9,15 @@
     {% if game.access_code is not None %}
     <p class="player-name">Code d'accès : {{ game.access_code }}</p>
     {% endif %}
-    <button class="btn btn-outline-danger mb-4">Abandonner</button>
-    <table id="game-grid">
+    <button class="btn btn-outline-danger mb-4" onclick="setAbandon('{{ request.user.username }}')">Abandonner</button>
+
+    <table id="game-grid" class="mb-4">
         {% for row in game.grid %}
         <tr>
             {% for cell in row %}
-            <td class="cell" id="{{ forloop.parentloop.counter}}-{{ forloop.counter}}" data-game-attributes="{{ game_attributes }}" data-symbol-player2="{{ player2_image_url }}" data-symbol-player1="{{ player1_image_url }}"
-                onclick="gameManagement(this)"></td>
+            <td class="cell" id="{{ forloop.parentloop.counter }}-{{ forloop.counter }}"
+                data-game-attributes="{{ game_attributes }}" data-symbol-player2="{{ player2_image_url }}"
+                data-symbol-player1="{{ player1_image_url }}" onclick="gameManagement(this)"></td>
             {% endfor %}
         </tr>
         {% endfor %}

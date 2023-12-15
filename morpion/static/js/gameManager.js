@@ -1,4 +1,4 @@
-var grid, activePlayer, player1, player2, winner, gameID, row, col;
+var grid, activePlayer, player1, player2, winner, gameID, row, col, abandon;
 if ($("#game-board").length) {
   var gameAttributes = $("td").attr("data-game-attributes");
   var gameAttributesObject = JSON.parse(gameAttributes);
@@ -9,43 +9,55 @@ if ($("#game-board").length) {
   gameID = gameAttributesObject.id;
   player1 = gameAttributesObject.creator;
   player2 = gameAttributesObject.player2;
+  winner = null;
+  abandon = null;
 
   $(document).ready(function () {
     setInterval(function () {
-      updateTable();
-    }, 500);
-  });
-}
-
-if ($("#game-over-page").length) {
-  $(document).ready(function() {
-    var gameID = $("#game-over-page").data("game-id");
-    console.log(gameID)
-    $.ajax({
-      type: 'POST',
-      url: '/set-stats/' + gameID + '/',
-      success: function(response) {
-          if (response.success) {
-              console.log('Statistiques enregistrées avec succès.');
-          } else {
-              console.error('Erreur lors de l\'enregistrement des statistiques.');
-          }
-      },
-      error: function(error) {
-          console.error('Erreur lors de la requête AJAX.', error);
+      if (abandon == null) {
+        updateTable();
+      } else {
+        window.location.href = "/";
       }
+    }, 800);
   });
-});
 }
 
 function gameManagement(element) {
   row = parseInt(element.id[0]) - 1;
   col = parseInt(element.id[2]) - 1;
-  if (player2 == player1) {
-    alert("Veuillez attendre que le deuxième joueur rejoigne la partie !");
+  if(grid[row][col] == null) {
+    if (player2 == player1) {
+      alert("Veuillez attendre que le deuxième joueur rejoigne la partie !");
+    } else {
+      updateGrid(abandon);
+    }
   } else {
-    updateGrid();
+    alert("Vous ne pouvez pas cliquer sur cette case")
   }
+
+}
+
+function setAbandon(user) {
+  var data = {
+    abandonPlayer: user,
+  }
+  $.ajax({
+    url: '/game/set-abanbon/' + gameID + '/',
+    type: "POST",
+    contentType: "application/json",
+    data: JSON.stringify(data),
+    success: function (response) {
+      if (response.success) {
+        console.log("Abandon value updated successfully");
+      } else {
+        console.log(response.error);
+      }
+    },
+    error: function (xhr, status, error) {
+      console.log(error);
+    },
+  });
 }
 
 function updateGrid() {
@@ -65,7 +77,7 @@ function updateGrid() {
       if (response.success) {
         console.log("Grid value updated successfully");
       } else {
-        alert("Ce n'est pas à ton tour !");
+        console.log(response.error);
       }
     },
     error: function (xhr, status, error) {
@@ -81,6 +93,7 @@ function updateTable() {
     success: function (response) {
       data = response.data;
       activePlayer = data.activePlayer;
+      abandon = data.abandon;
       player2 = data.player2;
       player2Symbol = data.player2Symbol;
       updateTableWithData(data.gameGrid, data.activePlayer);

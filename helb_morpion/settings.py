@@ -34,7 +34,6 @@ ALLOWED_HOSTS = []
 INSTALLED_APPS = [
     'users.apps.UsersConfig',
     'morpion.apps.MorpionConfig',
-    'stats.apps.StatsConfig',
     'crispy_forms',
     'crispy_bootstrap4',
     'django.contrib.admin',
@@ -139,3 +138,5 @@ CRISPY_TEMPLATE_PACK = 'bootstrap4'
 
 LOGIN_REDIRECT_URL = 'morpion-home'
 LOGIN_URL = 'login'
+
+DATA_UPLOAD_MAX_MEMORY_SIZE = 10485760

@@ -13,8 +13,8 @@ urlpatterns = [
     path('game/<int:game_id>/grid/get-data/', views.get_data, name='get-data'),
     path('game/<int:game_id>/over/<str:winner>/', views.game_over, name='game_over'),
     path('games/user/<str:username>/', UserGameListView.as_view(), name='user-games'),
-    path('set-stats/<int:game_id>/', views.set_stats, name='set-stats'),
     path('stats/activity/', views.view_stats_activity, name='activity-stats'),
     path('stats/ranking/', views.view_stats_ranking, name='ranking-stats'),
+    path('game/set-abanbon/<int:game_id>/', views.set_abandon, name='set-abandon')
 
 ]
