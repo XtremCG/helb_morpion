@@ -16,5 +16,4 @@ urlpatterns = [
     path('stats/activity/', views.view_stats_activity, name='activity-stats'),
     path('stats/ranking/', views.view_stats_ranking, name='ranking-stats'),
     path('game/set-abanbon/<int:game_id>/', views.set_abandon, name='set-abandon')
-
 ]

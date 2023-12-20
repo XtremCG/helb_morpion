@@ -15,7 +15,6 @@ from datetime import datetime, timedelta
 from django.db.models import Q
 
 def view_stats_ranking(request):
-    
     my_hashmap = {}
     user = request.user
     displayed_users = 3
@@ -139,7 +138,6 @@ def set_abandon(request, game_id):
             elif abandonUser == game.player2:
                 game.winner = game.creator
             game.save()
-            game.save()
 
             return JsonResponse({'success': True})
         except Exception as e:
@@ -156,11 +154,12 @@ def update_grid(request, game_id):
         new_active_player = data.get('newActivePlayer')
         try:
             game = Game.objects.get(id=game_id)
+            print(type(request.user.get_username()))
             if str(request.user.get_username()) != game.active_player:
                 return JsonResponse({'error': 'Vous n\'êtes pas le joueur actif.'})
 
             game.active_player = str(new_active_player)
-            game.update_grid(row, col, value) 
+            game.update_grid(row, col, value)
 
             return JsonResponse({'success': True})
         except Exception as e:
@@ -211,7 +210,6 @@ class GameGridView(View, LoginRequiredMixin):
     def get(self, request, game_id):
         game = Game.objects.get(pk=game_id)
         player1_image_url = game.creator.profile.game_symbol.url
-        game.active_player = game.creator.username
         game.save()
         if game.player2 is not None:
             player2_image_url = game.player2.profile.game_symbol.url
@@ -219,6 +217,7 @@ class GameGridView(View, LoginRequiredMixin):
             player2_image_url = game.creator.profile.game_symbol.url
 
         game_attributes = json.dumps(game.get_all_attributes())
+        print(game.grid_size)
         context = {
             'game': game,
             'player1_image_url': player1_image_url,
@@ -257,6 +256,7 @@ class GameCreateView(LoginRequiredMixin, CreateView):
 
     def form_valid(self, form):
         form.instance.creator = self.request.user
+        form.instance.active_player = self.request.user
         form.instance.winner = None
         form.instance.abandon = None
         if form.instance.alignment <= form.instance.grid_size:
@@ -279,7 +279,7 @@ class GameCreateView(LoginRequiredMixin, CreateView):
 class GameUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Game
     fields = ['title', 'grid_size', 'alignment', 'is_private']
-
+    
     def form_valid(self, form):
         form.instance.creator = self.request.user
         form.instance.updated_at = timezone.now() 
@@ -292,7 +292,7 @@ class GameUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
 
     def test_func(self):
         game = self.get_object()
-        if self.request.user == game.creator:
+        if self.request.user == game.creator and game.status != 'started':
             return True
         return False
 

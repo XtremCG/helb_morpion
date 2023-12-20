@@ -22,22 +22,24 @@ if ($("#game-board").length) {
     }, 800);
   });
 }
-
+// Call au click d'une case
 function gameManagement(element) {
-  row = parseInt(element.id[0]) - 1;
-  col = parseInt(element.id[2]) - 1;
+  if(element) {
+    row = parseInt(element.id[0]) - 1;
+    col = parseInt(element.id[2]) - 1;
+  }
   if(grid[row][col] == null) {
     if (player2 == player1) {
       alert("Veuillez attendre que le deuxième joueur rejoigne la partie !");
     } else {
-      updateGrid(abandon);
+      updateGrid();
     }
   } else {
-    alert("Vous ne pouvez pas cliquer sur cette case")
+    alert("Vous ne pouvez pas cliquer sur cette case !")
   }
 
 }
-
+// Call au click du boutton d'abandon
 function setAbandon(user) {
   var data = {
     abandonPlayer: user,
@@ -59,7 +61,8 @@ function setAbandon(user) {
     },
   });
 }
-
+// Set les valeurs row, col, value, newActivePlayer
+// Call au dans gameManagement()
 function updateGrid() {
   var data = {
     row: row,
@@ -85,7 +88,9 @@ function updateGrid() {
     },
   });
 }
-
+// Get les valeurs activePlayer, abandon, player2, player2Symbol, gameGrid, gridSize, alignment
+// Avec ces valeurs, maj de la table + verification si il y a un gagnant => si oui gameOver()
+// Call dans mon interval
 function updateTable() {
   $.ajax({
     type: "GET",
@@ -96,7 +101,7 @@ function updateTable() {
       abandon = data.abandon;
       player2 = data.player2;
       player2Symbol = data.player2Symbol;
-      updateTableWithData(data.gameGrid, data.activePlayer);
+      updateTableWithData(data.gameGrid, activePlayer);
       winner = checkWinner(data.gameGrid, data.gridSize, data.alignment);
       if (winner !== null) {
         console.log("Le joueur " + winner + " a gagné !");
@@ -108,7 +113,7 @@ function updateTable() {
     },
   });
 }
-
+// Call quand la partie est finie
 function gameOver() {
   $.ajax({
     type: "GET",
@@ -121,7 +126,8 @@ function gameOver() {
     },
   });
 }
-
+// Retourne le nom du gagnant
+// Fais avec ChatGPT
 function checkWinner(grid, gridSize, alignment) {
   for (let i = 0; i < gridSize; i++) {
     let row = grid[i][0];
@@ -200,14 +206,14 @@ function checkWinner(grid, gridSize, alignment) {
 
   return "Match nul"; // Aucune case vide, match nul
 }
-
+// Change la valeur d'une case, call dans la fonction updateTableWithData
 function updateCellValue(cellId, newValue) {
   var cell = document.getElementById(cellId);
   if (cell) {
     cell.innerHTML = newValue;
   }
 }
-
+// Actualise la table avec les customs symbols + le texte des joueurs
 function updateTableWithData(gameGrid, activePlayer) {
   for (var i = 0; i < gameGrid.length; i++) {
     for (var j = 0; j < gameGrid[i].length; j++) {

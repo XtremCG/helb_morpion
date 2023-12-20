@@ -54,12 +54,24 @@ class Game(models.Model):
         return attributes
 
     def save(self, *args, **kwargs):
+    # Si l'objet est nouveau
         if not self.pk:
             self.grid_data = self.initialize_grid()
+    # Si l'objet existe déjà
+        elif self.pk:
+        # Récupère l'ancienne grille du jeu
+            old_game = Game.objects.get(pk=self.pk)
+        # Vérifie si la taille de la grille a changé
+            if self.grid_size != old_game.grid_size:
+            # Réinitialise la grille du jeu
+                self.grid_data = self.initialize_grid()
+
+    # Appelle la méthode save du modèle parent pour effectuer la sauvegarde
         super().save(*args, **kwargs)
 
     def initialize_grid(self):
         return [[None for _ in range(self.grid_size)] for _ in range(self.grid_size)]
+        
 
     def get_grid(self):
         return self.grid
