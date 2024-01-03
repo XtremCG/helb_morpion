@@ -8,7 +8,7 @@
     <div class="media-body">
         <div class="article-metadata">
             <a class="mr-2" href="{% url 'user-games' game.creator.username %}">{{ game.creator }}</a>
-            <small class="text-muted">{{ game.created_at|date:"F d, Y" }}</small>
+            <small class="text-muted">{{ game.updated_at|date:"F d, Y" }}</small>
         </div>
         <h2><a class="article-title" href="{% url 'game-detail' game.id %}">{{ game.title }}</a></h2>
         <p class="article-content">Taille de la grille : {{ game.grid_size }} x {{ game.grid_size }}</p>
@@ -18,13 +18,13 @@
 </article>
 {% endfor %}
 {% else %}
-<p class="article-content">Cet utilisateur n'a aucune partie en cours</p>
+<p class="article-content">Cet utilisateur n'a aucune partie en attente</p>
 {% endif %}
 
 {% if is_paginated %}
     {% if page_obj.has_previous %}
-    <a class="btn btn-outline-info mb-4" href="?page=1">First</a>
-    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+    <a class="btn btn-outline-info mb-4" href="?page=1">Début</a>
+    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.previous_page_number }}">Précédent</a>
     {% endif %}
 
     {% for num in page_obj.paginator.page_range %}
@@ -36,8 +36,8 @@
     {% endfor %}
 
     {% if page_obj.has_next %}
-    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Next</a>
-    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Last</a>
+    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.next_page_number }}">Suivant</a>
+    <a class="btn btn-outline-info mb-4" href="?page={{ page_obj.paginator.num_pages }}">Fin</a>
     {% endif %}
 {% endif %}
 

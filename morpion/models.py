@@ -66,7 +66,6 @@ class Game(models.Model):
             # Réinitialise la grille du jeu
                 self.grid_data = self.initialize_grid()
 
-    # Appelle la méthode save du modèle parent pour effectuer la sauvegarde
         super().save(*args, **kwargs)
 
     def initialize_grid(self):

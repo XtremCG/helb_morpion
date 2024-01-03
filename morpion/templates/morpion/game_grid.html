@@ -6,7 +6,7 @@
     <p class="player-name lead" id="player1">Joueur 1 : {{ game.creator.username }} (Créateur)</p>
     <p class="player-name lead" id="player2">Joueur 2 : {{ game.player2.username }}</p>
     <p class="player-name lead" id="active-player">Au tour de : {{ game.active_player }}</p>
-    {% if game.access_code is not None %}
+    {% if game.access_code is not None and game.creator == request.user %}
     <p class="player-name">Code d'accès : {{ game.access_code }}</p>
     {% endif %}
     <button class="btn btn-outline-danger mb-4" onclick="setAbandon('{{ request.user.username }}')">Abandonner</button>

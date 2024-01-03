@@ -1,11 +1,34 @@
 {% extends "morpion/base.html" %}
 {% block content %}
 
+<form method="post" action="{% url 'activity-stats' %}" class="mb-4">
+    {% csrf_token %}
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group text-center">
+                <label for="{{ form.month.id_for_label }}">Mois :</label>
+                {{ form.month }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group text-center">
+                <label for="{{ form.year.id_for_label }}">Année :</label>
+                {{ form.year }}
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="form-group text-center">
+                <button type="submit" class="btn btn-primary btn-block btn-custom">Filtrer</button>
+            </div>
+        </div>
+    </div>
+</form>
+
 {% if all_zero %}
 <p>Vous n'avez joué aucune partie ce mois-ci</p>
 {% else %}
 <canvas id="myChart" style="width:100%;max-width:800px"></canvas>
-<div id="compteur-par-jour-x" data-values="{{ x_values }}"></div>
-<div id="compteur-par-jour-y" data-values="{{ y_values }}"></div>
+<div id="compt-per-day-x" data-values="{{ x_values }}"></div>
+<div id="compt-per-day-y" data-values="{{ y_values }}"></div>
 {% endif %}
 {% endblock %}

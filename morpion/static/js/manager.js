@@ -1,11 +1,13 @@
 if ($("#myChart").length) {
   const xValues = JSON.parse(
-    document.getElementById("compteur-par-jour-x").getAttribute("data-values")
+    document.getElementById("compt-per-day-x").getAttribute("data-values")
   );
   const yValues = JSON.parse(
-    document.getElementById("compteur-par-jour-y").getAttribute("data-values")
+    document.getElementById("compt-per-day-y").getAttribute("data-values")
   );
-  const maxValeur = Math.max(...yValues);
+  const maxValue = Math.max(...yValues);
+
+    // Doc Chart.js
 
   new Chart("myChart", {
     type: "bar",
@@ -44,7 +46,7 @@ if ($("#myChart").length) {
             },
             ticks: {
               min: 0,
-              max: maxValeur + 5,
+              max: maxValue + 5,
             },
           },
         ],

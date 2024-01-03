@@ -5,21 +5,33 @@
     <form method="post" action="{% url 'ranking-stats' %}" class="mb-4">
         {% csrf_token %}
         <div class="row">
-            <div class="col-md-4">
-                <div class="form-group text-center">
-                    <label for="{{ form.grid_size.id_for_label }}">Taille de la grille:</label>
-                    {{ form.grid_size }}
+            <div class="col-md-6 offset-md-3">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group text-center">
+                            <label for="{{ form.grid_size.id_for_label }}">Taille de la grille :</label>
+                            {{ form.grid_size }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group text-center">
+                            <label for="{{ form.alignment.id_for_label }}">Alignement :</label>
+                            {{ form.alignment }}
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group text-center">
+                            <label for="{{ form.displayed_users.id_for_label }}">Joueurs affichés :</label>
+                            {{ form.displayed_users }}
+                        </div>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group text-center">
-                    <label for="{{ form.alignment.id_for_label }}">Alignement:</label>
-                    {{ form.alignment }}
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group text-center">
-                    <button type="submit" class="btn btn-primary btn-block btn-custom">Filtrer</button>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group text-center">
+                            <button type="submit" class="btn btn-primary btn-block btn-custom">Filtrer</button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

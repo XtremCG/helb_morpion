@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
-from .forms import JoinGameForm, StatsForm
+from .forms import JoinGameForm, StatsForm, ActivityForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
@@ -14,10 +14,11 @@ from django.contrib.auth.models import User
 from datetime import datetime, timedelta
 from django.db.models import Q
 
+@login_required
 def view_stats_ranking(request):
     my_hashmap = {}
     user = request.user
-    displayed_users = 3
+    displayed_users = 5
     alignment = 3
     grid_size = 3
     if request.method == 'POST':
@@ -25,6 +26,7 @@ def view_stats_ranking(request):
         if form.is_valid():
             alignment = form.cleaned_data['alignment']
             grid_size = form.cleaned_data['grid_size']
+            displayed_users = form.cleaned_data['displayed_users']
             games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
         else:
             games = Game.objects.filter(Q(alignment=alignment, grid_size=grid_size)).filter(status="completed")
@@ -71,8 +73,17 @@ def view_stats_activity(request):
 
     month = current_date.month
     year = current_date.year
-    first_day = datetime(year, month, 1)
-    last_day = datetime(year, month, 31)
+
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            month = form.cleaned_data['month']
+            year = form.cleaned_data['year']
+    else:
+        form = ActivityForm()
+
+    first_day = datetime(int(year), int(month), 1)
+    last_day = datetime(int(year), int(month), 31)
 
     daily_counter = {}
 
@@ -84,6 +95,7 @@ def view_stats_activity(request):
         daily_counter[current_date.day] = games.count()
     
     context = {
+        'form': form,
         'x_values': json.dumps(list(daily_counter.keys())),
         'y_values': json.dumps(list(daily_counter.values())),
         'all_zero': all(value == 0 for value in daily_counter.values())
@@ -114,12 +126,10 @@ def get_data(request, game_id):
     if(game.player2 != None):
         data['player2'] = game.player2.username
         data['player2Symbol'] = game.player2.profile.game_symbol.url
-        
+
     if game.abandon is not None:
         user = User.objects.get(username=game.abandon)
         if user != request.user:
-            game.winner = request.user
-            game.status = "completed"
             messages.warning(request, f'Votre adversaire {user.username} a quitté la partie, vous avez donc gagné la partie.')
     return JsonResponse({'data': data})
 
@@ -255,6 +265,7 @@ class GameCreateView(LoginRequiredMixin, CreateView):
     fields = ['title', 'grid_size', 'alignment', 'is_private']
 
     def form_valid(self, form):
+        print(self.request.user)
         form.instance.creator = self.request.user
         form.instance.active_player = self.request.user
         form.instance.winner = None

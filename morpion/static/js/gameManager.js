@@ -62,7 +62,8 @@ function setAbandon(user) {
   });
 }
 // Set les valeurs row, col, value, newActivePlayer
-// Call au dans gameManagement()
+// Call dans gameManagement()
+// Fait avec l'aide ChatGPT
 function updateGrid() {
   var data = {
     row: row,
@@ -233,3 +234,4 @@ function updateTableWithData(gameGrid, activePlayer) {
   }
   $("#active-player").text("Au tour de " + activePlayer);
 }
+

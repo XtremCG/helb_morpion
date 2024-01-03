@@ -6,7 +6,7 @@
         <div class="article-metadata">
             <a class="mr-2" href="{% url 'user-games' game.creator.username %}">{{ game.creator }}</a>
             <small class="text-muted">Dernière modification : {{ game.updated_at|date:"F d, Y" }}</small>
-            {% if object.creator == user %}
+            {% if object.creator == user and object.status == "waiting" %}
                 <div>
                     <a class="btn btn-secondary btn-sm mt-1 mb-1" href="{% url 'game-update' game.id %}">Modifier</a>
                     <a class="btn btn-danger btn-sm mt-1 mb-1" href="{% url 'game-delete' game.id %}">Supprimer</a>
@@ -18,7 +18,7 @@
         </div>
         <h2 class="article-title">{{ object.title }}</h2>
         <p class="article-content">Taille de la grille : {{ game.grid_size }} x {{ game.grid_size }}</p>
-        <p class="article-content">Allignement requis : {{ game.alignment }}</p>
+        <p class="article-content">Alignement requis : {{ game.alignment }}</p>
         <a href="{% url 'confirm-join-game' game.id %}" class="btn btn-primary">Rejoindre la partie</a>
     </div>
 </article>
