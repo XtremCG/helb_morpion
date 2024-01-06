@@ -15,11 +15,11 @@
       <div class="media-body">
         <div class="article-metadata">
           <a class="mr-2" href="{% url 'user-games' game.creator.username %}">{{ game.creator }}</a>
-           <small class="text-muted">Dernière modification : {{ game.updated_at|date:"F d, Y" }}</small>
+           <small class="text-muted">Last edit : {{ game.updated_at|date:"F d, Y" }}</small>
         </div>
         <h2><a class="article-title" href="{% url 'game-detail' game.id %}">{{ game.title }}</a></h2>
-        <p class="article-content">Taille de la grille : {{ game.grid_size }} x {{ game.grid_size }}</p>
-        <p class="article-content">Alignement requis : {{ game.alignment }}</p>
+        <p class="article-content">Grid size : {{ game.grid_size }} x {{ game.grid_size }}</p>
+        <p class="article-content">Required alignment : {{ game.alignment }}</p>
         <form method="post" action="{% url 'confirm-join-game' game.id %}" class="mt-4">
           {% csrf_token %}
   
@@ -27,7 +27,7 @@
               {{ form.as_p }}
           {% endif %}
   
-          <button class="btn btn-primary" type="submit" name="join">Rejoindre la partie</button>
+          <button class="btn btn-primary" type="submit" name="join">Join game</button>
           <input class="btn btn-danger" type="submit" name="cancel" value="Annuler">
       </form>
       </div>

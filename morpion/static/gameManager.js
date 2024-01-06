@@ -30,12 +30,12 @@ function gameManagement(element) {
   }
   if(grid[row][col] == null) {
     if (player2 == player1) {
-      alert("Veuillez attendre que le deuxième joueur rejoigne la partie !");
+      alert("Please wait for the second player to join the game!");
     } else {
       updateGrid();
     }
   } else {
-    alert("Vous ne pouvez pas cliquer sur cette case !")
+    alert("You cannot click on this box!")
   }
 
 }
@@ -105,7 +105,6 @@ function updateTable() {
       updateTableWithData(data.gameGrid, activePlayer);
       winner = checkWinner(data.gameGrid, data.gridSize, data.alignment);
       if (winner !== null) {
-        console.log("Le joueur " + winner + " a gagné !");
         gameOver();
       }
     },
@@ -123,7 +122,7 @@ function gameOver() {
       window.location.href = "/game/" + gameID + "/over/" + winner + "/";
     },
     error: function (error) {
-      console.error("Erreur lors de la requête AJAX :", error);
+      console.error("AJAX request error:", error);
     },
   });
 }
@@ -228,10 +227,10 @@ function updateTableWithData(gameGrid, activePlayer) {
       updateCellValue(cellId, cellValue);
     }
   }
-  $("#player2").text("Joueur 2 : " + player2);
+  $("#player2").text("Player 2 : " + player2);
   if (player2 == player1) {
-    $("#player2").text("En attente du deuxième joueur...");
+    $("#player2").text("Waiting for the second player...");
   }
-  $("#active-player").text("Au tour de " + activePlayer);
+  $("#active-player").text("The turn of " + activePlayer);
 }
 

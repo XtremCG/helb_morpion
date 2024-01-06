@@ -5,17 +5,18 @@ from .models import Profile
 
 class ExtendedUserCreationForm(UserCreationForm):
     email = forms.EmailField()
+    image = forms.ImageField()
     game_symbol = forms.ImageField()
 
     class Meta:
         model = User
-        fields = ['username', 'email', 'password1', 'password2', 'game_symbol']
+        fields = ['username', 'email', 'password1', 'password2', 'image', 'game_symbol']
 
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data['email']
         user.save()
-
+        user.profile.image = self.cleaned_data['image']
         user.profile.game_symbol = self.cleaned_data['game_symbol']
         user.profile.save()
 

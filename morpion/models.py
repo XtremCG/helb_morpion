@@ -3,6 +3,8 @@ from django.contrib.auth.models import User
 from django.urls import reverse
 import random
 import string
+from django.core.validators import MinValueValidator, MaxValueValidator
+
 
 class Game(models.Model):
     creator = models.ForeignKey(User, on_delete=models.CASCADE, related_name='games_created')
@@ -11,13 +13,12 @@ class Game(models.Model):
     winner = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='games_won')
     abandon = models.CharField(max_length=20, default='', null=True, blank=True)
     title = models.CharField(max_length=200)
-    grid_size = models.PositiveIntegerField()
-    alignment = models.PositiveIntegerField()
+    grid_size = models.IntegerField(validators=[MinValueValidator(3), MaxValueValidator(9)])
+    alignment = models.IntegerField(validators=[MinValueValidator(3), MaxValueValidator(9)])
     STATUS_CHOICES = (
         ('waiting', 'Waiting'),
         ('started', 'Started'),
-        ('completed', 'Completed'),
-        ('abandoned', 'Abandoned')
+        ('completed', 'Completed')
     )
     status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='waiting')
     created_at = models.DateField(auto_now_add=True)
@@ -59,7 +60,7 @@ class Game(models.Model):
             self.grid_data = self.initialize_grid()
     # Si l'objet existe déjà
         elif self.pk:
-        # Récupère l'ancienne grille du jeu
+        # Récupère l'ancienne version de la partie
             old_game = Game.objects.get(pk=self.pk)
         # Vérifie si la taille de la grille a changé
             if self.grid_size != old_game.grid_size:

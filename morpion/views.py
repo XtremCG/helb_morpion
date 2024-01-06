@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from .models import Game
-from .forms import JoinGameForm, StatsForm, ActivityForm
+from .forms import JoinGameForm, StatsForm, ActivityForm, GameFilterForm
 from django.views.generic import CreateView, UpdateView, DeleteView, DetailView, ListView, View
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.urls import reverse
@@ -164,7 +164,6 @@ def update_grid(request, game_id):
         new_active_player = data.get('newActivePlayer')
         try:
             game = Game.objects.get(id=game_id)
-            print(type(request.user.get_username()))
             if str(request.user.get_username()) != game.active_player:
                 return JsonResponse({'error': 'Vous n\'êtes pas le joueur actif.'})
 
@@ -227,7 +226,6 @@ class GameGridView(View, LoginRequiredMixin):
             player2_image_url = game.creator.profile.game_symbol.url
 
         game_attributes = json.dumps(game.get_all_attributes())
-        print(game.grid_size)
         context = {
             'game': game,
             'player1_image_url': player1_image_url,
@@ -253,19 +251,33 @@ class GameListView(ListView):
     paginate_by = 3
 
     def get_queryset(self):
-        return Game.objects.filter(status="waiting").order_by('-updated_at')
+        queryset = Game.objects.filter(status="waiting").order_by('-updated_at')
+
+        form = GameFilterForm(self.request.GET)
+
+        if form.is_valid():
+            grid_size = form.cleaned_data.get('grid_size')
+            alignment = form.cleaned_data.get('alignment')
+
+            if grid_size:
+                queryset = queryset.filter(grid_size=grid_size)
+
+            if alignment:
+                queryset = queryset.filter(alignment=alignment)
+
+        return queryset
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        context['title'] = 'Liste des parties publiques'
+        context['title'] = 'Liste des parties'
+        context['filter_form'] = GameFilterForm(self.request.GET)
         return context
 
 class GameCreateView(LoginRequiredMixin, CreateView):
     model = Game
     fields = ['title', 'grid_size', 'alignment', 'is_private']
 
-    def form_valid(self, form):
-        print(self.request.user)
+    def form_valid(self, form):        
         form.instance.creator = self.request.user
         form.instance.active_player = self.request.user
         form.instance.winner = None

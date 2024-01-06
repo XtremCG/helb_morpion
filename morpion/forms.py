@@ -11,21 +11,25 @@ class StatsForm(forms.Form):
 
 class ActivityForm(forms.Form):
     MONTH_CHOICES = [
-        ('01', 'Janvier'),
-        ('02', 'Février'),
-        ('03', 'Mars'),
-        ('04', 'Avril'),
-        ('05', 'Mai'),
-        ('06', 'Juin'),
-        ('07', 'Juillet'),
-        ('08', 'Août'),
-        ('09', 'Septembre'),
-        ('10', 'Octobre'),
-        ('11', 'Novembre'),
-        ('12', 'Décembre'),
+        ('01', 'January'),
+        ('02', 'February'),
+        ('03', 'March'),
+        ('04', 'April'),
+        ('05', 'May'),
+        ('06', 'June'),
+        ('07', 'July'),
+        ('08', 'August'),
+        ('09', 'September'),
+        ('10', 'October'),
+        ('11', 'November'),
+        ('12', 'December'),
     ]
 
     YEAR_CHOICES = [(str(year), str(year)) for year in range(2023, datetime.date.today().year + 1)]
 
     month = forms.ChoiceField(choices=MONTH_CHOICES, label='Mois', initial=datetime.date.today().month)
     year = forms.ChoiceField(choices=YEAR_CHOICES, label='Année', initial=datetime.date.today().year)
+
+class GameFilterForm(forms.Form):
+    grid_size = forms.IntegerField(min_value=1, required=False)
+    alignment = forms.IntegerField(min_value=1, required=False)

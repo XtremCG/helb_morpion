@@ -9,19 +9,19 @@
                 <div class="row">
                     <div class="col-md-4">
                         <div class="form-group text-center">
-                            <label for="{{ form.grid_size.id_for_label }}">Taille de la grille :</label>
+                            <label for="{{ form.grid_size.id_for_label }}">Grid Size :</label>
                             {{ form.grid_size }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group text-center">
-                            <label for="{{ form.alignment.id_for_label }}">Alignement :</label>
+                            <label for="{{ form.alignment.id_for_label }}">Alignment :</label>
                             {{ form.alignment }}
                         </div>
                     </div>
                     <div class="col-md-4">
                         <div class="form-group text-center">
-                            <label for="{{ form.displayed_users.id_for_label }}">Joueurs affichés :</label>
+                            <label for="{{ form.displayed_users.id_for_label }}">Displayed users :</label>
                             {{ form.displayed_users }}
                         </div>
                     </div>
@@ -29,22 +29,22 @@
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group text-center">
-                            <button type="submit" class="btn btn-primary btn-block btn-custom">Filtrer</button>
+                            <button type="submit" class="btn btn-primary btn-block btn-custom">Filter</button>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </form>
-    <h1 class="mb-4 text-center">Top {{ displayed_users }} pour la configuration G{{ grid_size }}A{{ alignment }}</h1>
+    <h1 class="mb-4 text-center">Top {{ displayed_users }} for configuration G{{ grid_size }}A{{ alignment }}</h1>
     {% if final_ranking %}
 
     <table class="table table-bordered text-center">
         <thead class="thead-dark">
             <tr>
-                <th style="width: 20px;">Classement</th>
-                <th>Joueur</th>
-                <th>Victoire(s)</th>
+                <th style="width: 20px;">Rank</th>
+                <th>Player</th>
+                <th>Win(s)</th>
             </tr>
         </thead>
         <tbody>
@@ -67,7 +67,7 @@
     </table>
 
     {% else %}
-    <p>Il n'y a aucun classement pour cette configuration</p>
+    <p>There is no ranking for this configuration.</p>
     {% endif %}
 </div>
 {% endblock %}

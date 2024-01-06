@@ -6,26 +6,26 @@
     <div class="row">
         <div class="col-md-4">
             <div class="form-group text-center">
-                <label for="{{ form.month.id_for_label }}">Mois :</label>
+                <label for="{{ form.month.id_for_label }}">Month :</label>
                 {{ form.month }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group text-center">
-                <label for="{{ form.year.id_for_label }}">Année :</label>
+                <label for="{{ form.year.id_for_label }}">Year :</label>
                 {{ form.year }}
             </div>
         </div>
         <div class="col-md-4">
             <div class="form-group text-center">
-                <button type="submit" class="btn btn-primary btn-block btn-custom">Filtrer</button>
+                <button type="submit" class="btn btn-primary btn-block btn-custom">Filter</button>
             </div>
         </div>
     </div>
 </form>
 
 {% if all_zero %}
-<p>Vous n'avez joué aucune partie ce mois-ci</p>
+<p>You haven't played any games this month</p>
 {% else %}
 <canvas id="myChart" style="width:100%;max-width:800px"></canvas>
 <div id="compt-per-day-x" data-values="{{ x_values }}"></div>

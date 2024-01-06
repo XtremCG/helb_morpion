@@ -26,7 +26,7 @@ if ($("#myChart").length) {
     options: {
       title: {
         display: true,
-        text: "Nombre de parties par jour ce mois-ci",
+        text: "Number of games per day this month",
       },
       legend: { display: false },
       scales: {
@@ -34,7 +34,7 @@ if ($("#myChart").length) {
           {
             scaleLabel: {
               display: true,
-              labelString: "Jour",
+              labelString: "Day",
             },
           },
         ],
@@ -42,7 +42,7 @@ if ($("#myChart").length) {
           {
             scaleLabel: {
               display: true,
-              labelString: "Nombre de parties",
+              labelString: "Number of games",
             },
             ticks: {
               min: 0,

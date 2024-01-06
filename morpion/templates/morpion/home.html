@@ -1,9 +1,24 @@
 {% extends "morpion/base.html" %}
 {% block content %}
 <div class="jumbotron">
-    <h1 class="display-4">Bienvenue sur HELBMorpion</h1>
-    <p class="lead">Jouez au morpion et établissez votre classement !</p>
+    <h1 class="display-4">Welcome to HELBMorpion</h1>
+    <p class="lead">Play games and establish your ranking!</p>
 </div>
+
+<form method="get" action="" class="form-inline">
+  <div class="form-group mr-2">
+    <label class="col-form-label mr-2" for="{{ filter_form.grid_size.id_for_label }}">Grid size : </label>
+    {{ filter_form.grid_size }}
+  </div>
+
+  <div class="form-group mr-2">
+    <label class="col-form-label mr-2" for="{{ filter_form.alignment.id_for_label }}">Alignment : </label>
+    {{ filter_form.alignment }}
+  </div>
+
+  <button type="submit" class="btn btn-primary">Filtrer</button>
+</form>
+
 {% if games %}
   {% for game in games %}
   <article class="media content-section">
@@ -11,17 +26,18 @@
    <div class="media-body">
      <div class="article-metadata">
        <a class="mr-2" href="{% url 'user-games' game.creator.username %}">{{ game.creator }}</a>
-       <small class="text-muted">Dernière modification : {{ game.updated_at|date:"F d, Y" }}</small>
+       <small class="text-muted">Last edit : {{ game.updated_at|date:"F d, Y" }}</small>
      </div>
      <h2><a class="article-title" href="{% url 'game-detail' game.id %}">{{ game.title }}</a></h2>
-     <p class="article-content">Taille de la grille : {{ game.grid_size }} x {{ game.grid_size }}</p>
-     <p class="article-content">Alignement requis : {{ game.alignment }}</p>
-     <a href="{% url 'confirm-join-game' game.id %}" class="btn btn-primary">Rejoindre la partie</a>
+     <p class="article-content">Grid size : {{ game.grid_size }} x {{ game.grid_size }}</p>
+     <p class="article-content">Required alignment : {{ game.alignment }}</p>
+     <a href="{% url 'confirm-join-game' game.id %}" class="btn btn-primary">Join game</a>
    </div>
   </article>
   {% endfor %}
 {% else %}
-  <p class="article-content">Il n'y a aucune partie publique disponible pour le moment</p>
+  <p class="article-content">There are no games available at the moment...</p>
+  <a href="{% url 'game-create' %}">Click here to create one!</a>
 {% endif %}
 
 {% if is_paginated %}
